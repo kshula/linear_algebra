@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Solve Linear Equations</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.1.0/math.min.js"></script>
+</head>
+<body>
+    <h1>Solve Linear Equations</h1>
+    <form id="equationForm">
+        <label for="eq1">Enter equation 1:</label><br>
+        <input type="text" id="eq1" name="eq1"><br>
+        <label for="eq2">Enter equation 2:</label><br>
+        <input type="text" id="eq2" name="eq2"><br>
+        <label for="eq3">Enter equation 3:</label><br>
+        <input type="text" id="eq3" name="eq3"><br>
+        <input type="button" value="Solve" onclick="solveEquations()">
+    </form>
+    <pre id="output"></pre>
+
+    <script>
+        function parseEquation(equation) {
+            const coeffs = [0, 0, 0];
+            let constant = 0;
+            const lhs = equation.split('=')[0].replace(/\s+/g, '');
+            const rhs = equation.split('=')[1].replace(/\s+/g, '');
+            constant = parseFloat(rhs);
+
+            const terms = lhs.split(/(?=[+-])/);
+            terms.forEach(term => {
+                if (term.includes('x')) {
+                    coeffs[0] = term === 'x' || term === '+x' ? 1 : term === '-x' ? -1 : parseFloat(term.replace('x', ''));
+                } else if (term.includes('y')) {
+                    coeffs[1] = term === 'y' || term === '+y' ? 1 : term === '-y' ? -1 : parseFloat(term.replace('y', ''));
+                } else if (term.includes('z')) {
+                    coeffs[2] = term === 'z' || term === '+z' ? 1 : term === '-z' ? -1 : parseFloat(term.replace('z', ''));
+                }
+            });
+
+            return [...coeffs, constant];
+        }
+
+        function solveEquations() {
+            const eq1 = document.getElementById('eq1').value;
+            const eq2 = document.getElementById('eq2').value;
+            const eq3 = document.getElementById('eq3').value;
+
+            const equations = [eq1, eq2, eq3];
+            const A = [];
+            const B = [];
+
+            equations.forEach(equation => {
+                const parsed = parseEquation(equation);
+                A.push(parsed.slice(0, 3));
+                B.push(parsed[3]);
+            });
+
+            const A_matrix = math.matrix(A);
+            const B_matrix = math.matrix(B);
+
+            try {
+                const X = math.lusolve(A_matrix, B_matrix);
+                document.getElementById('output').textContent = `
+Matrix A:
+${A_matrix}
+
+Vector B:
+${B_matrix}
+
+Solution for X:
+x = ${X.get([0, 0])}
+y = ${X.get([1, 0])}
+z = ${X.get([2, 0])}
+                `;
+            } catch (error) {
+                document.getElementById('output').textContent = 'The system of equations does not have a unique solution.';
+            }
+        }
+    </script>
+</body>
+</html>
